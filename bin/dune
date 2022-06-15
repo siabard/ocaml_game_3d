@@ -1,0 +1,5 @@
+(executable
+ (public_name game_3d)
+ (name main)
+ (link_flags -cclib -lSDL2)
+ (libraries sdl2 game_3d))
