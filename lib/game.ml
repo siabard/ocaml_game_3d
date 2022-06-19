@@ -1,6 +1,6 @@
 open Sdl
 open Sdlevent
-    
+
 class game =
   object (s)
     val mutable window = None
@@ -14,7 +14,7 @@ class game =
                   window <- Some(m_window);
                   is_running <- true
 
-    
+
     method shutdown () = let _ = match window with
                         | Some(w) -> Sdlwindow.destroy w
                         | None -> ()
@@ -22,14 +22,17 @@ class game =
               Sdl.quit ();
               ()
 
-    
-    method process_event ()  = match Event.poll_event () with
-      | None -> ()
-      | Some Quit _ -> is_running <- false
-      | _ -> ()
-    
 
-    
+    method process_event () = let rec aux_process () =
+                                let event = Event.poll_event () in
+                                match event with
+                                | Some Quit _ -> is_running <- false
+                                | _ -> aux_process ()
+      in
+      aux_process ()
+
+
+
     method gameloop = let rec loop () =
                         if is_running == true then begin
                           s#process_event  () ;
@@ -38,5 +41,5 @@ class game =
                         else s#shutdown ()
                       in
                       loop ()
-    
+
     end
