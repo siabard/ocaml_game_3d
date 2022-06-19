@@ -27,6 +27,7 @@ class game =
                                 let event = Event.poll_event () in
                                 match event with
                                 | Some Quit _ -> is_running <- false
+                                | None -> ()
                                 | _ -> aux_process ()
       in
       aux_process ()
