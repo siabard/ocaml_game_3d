@@ -14,6 +14,7 @@ class game =
     val mutable width = 0
     val mutable ball : point2d = { x= 0.0 ; y = 0.0 }
     val mutable paddle : point2d = { x = 0.0; y = 0.0}
+    val mutable keystates = new Key.keystates
 
     method init w h = let _ = Sdl.init[`VIDEO] in
       let m_window = Sdlwindow.create2
@@ -43,23 +44,16 @@ class game =
                                 let event = Event.poll_event () in
                                 match event with
                                 | Some Quit _ -> is_running <- false
-                                | Some KeyDown ev -> begin
-                                    match ev.scancode with
-                                    | Sdlscancode.ESCAPE ->
-                                      is_running <- false;
-                                      ()
-                                    | Sdlscancode.UP ->
-                                      paddle <- {x = paddle.x; y = paddle.y -. 1.0};
-                                      ()
-                                    | Sdlscancode.DOWN ->
-                                      paddle <- {x = paddle.x; y = paddle.y +. 1.0};
-                                      ()
-                                    | _ -> ()
-                                  end
+                                | Some KeyDown ev -> if ev.ke_repeat == 0 then begin
+                                    keystates#keydown_event ev.scancode ;
+                                    ()
+                                  end else ()
+                                | Some KeyUp ev -> keystates#keyup_event ev.scancode ; ()
                                 | None -> ()
                                 | _ -> aux_process ()
       in
       aux_process ()
+
 
 
 
@@ -74,7 +68,20 @@ class game =
         Sdlrender.fill_rect renderer (Sdlrect.make4 ~x: (int_of_float (ball.x -. (float_of_int thickness) /. 2.0)) ~y: (int_of_float (ball.y -. (float_of_int thickness) /. 2.0)) ~w: thickness ~h:thickness) in
       let rec loop () =
         if is_running == true then begin
+          keystates#begin_frame () ;
           s#process_event  () ;
+          if keystates#was_key_held Sdlscancode.ESCAPE == true then begin
+            is_running <- false;
+            ()
+          end else ();
+          if keystates#was_key_held Sdlscancode.UP == true then begin
+            paddle <- {x = paddle.x; y = paddle.y -. 1.0};
+            ()
+          end else ();
+          if keystates#was_key_held Sdlscancode.DOWN == true then begin
+            paddle <- {x = paddle.x; y = paddle.y +. 1.0};
+            ()
+          end else ();
           let _ = match renderer with
             | Some(r) -> Sdlrender.set_draw_color3 r ~r:0 ~g:0 ~b:255 ~a:255 ;
               Sdlrender.clear r;
