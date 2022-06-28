@@ -47,7 +47,7 @@ class game =
                                 | Some KeyDown ev -> if ev.ke_repeat == 0 then begin
                                     keystates#keydown_event ev.scancode ;
                                     ()
-                                  end else ()
+                                  end
                                 | Some KeyUp ev -> keystates#keyup_event ev.scancode ; ()
                                 | None -> ()
                                 | _ -> aux_process ()
@@ -73,15 +73,15 @@ class game =
           if keystates#was_key_held Sdlscancode.ESCAPE == true then begin
             is_running <- false;
             ()
-          end else ();
+          end;
           if keystates#was_key_held Sdlscancode.UP == true then begin
             paddle <- {x = paddle.x; y = paddle.y -. 1.0};
             ()
-          end else ();
+          end;
           if keystates#was_key_held Sdlscancode.DOWN == true then begin
             paddle <- {x = paddle.x; y = paddle.y +. 1.0};
             ()
-          end else ();
+          end;
           let _ = match renderer with
             | Some(r) -> Sdlrender.set_draw_color3 r ~r:0 ~g:0 ~b:255 ~a:255 ;
               Sdlrender.clear r;
