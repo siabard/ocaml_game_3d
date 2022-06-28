@@ -44,11 +44,9 @@ class game =
                                 let event = Event.poll_event () in
                                 match event with
                                 | Some Quit _ -> is_running <- false
-                                | Some KeyDown ev -> if ev.ke_repeat == 0 then begin
-                                    keystates#keydown_event ev.scancode ;
-                                    ()
-                                  end
-                                | Some KeyUp ev -> keystates#keyup_event ev.scancode ; ()
+                                | Some KeyDown ev -> if ev.ke_repeat == 0 then
+                                    keystates#keydown_event ev.scancode
+                                | Some KeyUp ev -> keystates#keyup_event ev.scancode
                                 | None -> ()
                                 | _ -> aux_process ()
       in
