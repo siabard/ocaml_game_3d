@@ -15,6 +15,7 @@ class game =
     val mutable ball : point2d = { x= 0.0 ; y = 0.0 }
     val mutable paddle : point2d = { x = 0.0; y = 0.0}
     val mutable keystates = new Key.keystates
+    val mutable last_time = 0
 
     method init w h = let _ = Sdl.init[`VIDEO] in
       let m_window = Sdlwindow.create2
@@ -53,6 +54,22 @@ class game =
       aux_process ()
 
 
+    method update dt =
+      if keystates#was_key_held Sdlscancode.ESCAPE == true then begin
+        is_running <- false;
+        ()
+      end;
+      if keystates#was_key_held Sdlscancode.UP == true then begin
+        paddle <- {x = paddle.x; y = paddle.y -. 150.0 *. (float_of_int dt) /. 1000.0};
+        ()
+      end;
+      if keystates#was_key_held Sdlscancode.DOWN == true then begin
+        paddle <- {x = paddle.x; y = paddle.y +. 150.0 *. (float_of_int dt) /. 1000.0};
+        ()
+      end;
+      if paddle.y > (float_of_int (height - 30 - thickness)) then paddle <- {x = paddle.x; y = (float_of_int (height - 30 - thickness))};
+      if paddle.y < (float_of_int (30 + thickness)) then paddle <- {x = paddle.x; y = (float_of_int (30 + thickness))};
+      ()
 
 
     method gameloop =
@@ -66,20 +83,11 @@ class game =
         Sdlrender.fill_rect renderer (Sdlrect.make4 ~x: (int_of_float (ball.x -. (float_of_int thickness) /. 2.0)) ~y: (int_of_float (ball.y -. (float_of_int thickness) /. 2.0)) ~w: thickness ~h:thickness) in
       let rec loop () =
         if is_running == true then begin
+          let start_time = Sdltimer.get_ticks () in
+          let dt = start_time - last_time in
           keystates#begin_frame () ;
           s#process_event  () ;
-          if keystates#was_key_held Sdlscancode.ESCAPE == true then begin
-            is_running <- false;
-            ()
-          end;
-          if keystates#was_key_held Sdlscancode.UP == true then begin
-            paddle <- {x = paddle.x; y = paddle.y -. 1.0};
-            ()
-          end;
-          if keystates#was_key_held Sdlscancode.DOWN == true then begin
-            paddle <- {x = paddle.x; y = paddle.y +. 1.0};
-            ()
-          end;
+          s#update dt;
           let _ = match renderer with
             | Some(r) -> Sdlrender.set_draw_color3 r ~r:0 ~g:0 ~b:255 ~a:255 ;
               Sdlrender.clear r;
@@ -93,6 +101,7 @@ class game =
               ()
             | None -> ()
           in
+          last_time <- start_time;
           loop ()
         end
         else s#shutdown ()
