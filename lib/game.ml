@@ -13,6 +13,7 @@ class game =
     val mutable height = 0
     val mutable width = 0
     val mutable ball : point2d = { x= 0.0 ; y = 0.0 }
+    val mutable ball_vel : point2d = {x = 0.0; y = 0.0}
     val mutable paddle : point2d = { x = 0.0; y = 0.0}
     val mutable keystates = new Key.keystates
     val mutable last_time = 0
@@ -27,6 +28,7 @@ class game =
       width <- w;
       height <- h;
       ball <- {x = float_of_int (width / 2); y = (float_of_int (height / 2))};
+      ball_vel <- {x = 100.0 /. 1000.0; y = 100.0 /. 1000.0};
       paddle <- {x = float_of_int thickness; y = (float_of_int (height / 2))};
       let m_renderer = Sdlrender.create_renderer ~win:m_window ~index:(-1) ~flags:[Render.Accelerated; Render.PresentVSync] in
       renderer <- Some(m_renderer);
@@ -54,6 +56,15 @@ class game =
       aux_process ()
 
 
+    method update_ball dt =
+      if (ball.y <= (float_of_int thickness) && ball_vel.y < 0.0) || (ball.y >= (float_of_int (height - thickness)) && ball_vel.y > 0.0) then
+        ball_vel <- {x = ball_vel.x; y = ball_vel.y *. (-1.0)};
+      if (ball.x >= (float_of_int (width - thickness)) && ball_vel.x > 0.0) then
+        ball_vel <- {x = ball_vel.x *. (-1.0); y = ball_vel.y};
+      if abs_float(ball.y -. paddle.y) <= 30.0 && ball.x <= 25.0 && ball.x >= 20.0 && ball_vel.x < 0.0 then
+        ball_vel <- {x = ball_vel.x *. (-1.0); y = ball_vel.y};
+      ball <- {x = ball.x +. ball_vel.x *. (float_of_int dt); y = ball.y +. ball_vel.y *. (float_of_int dt)}
+
     method update dt =
       if keystates#was_key_held Sdlscancode.ESCAPE == true then begin
         is_running <- false;
@@ -69,6 +80,7 @@ class game =
       end;
       if paddle.y > (float_of_int (height - 30 - thickness)) then paddle <- {x = paddle.x; y = (float_of_int (height - 30 - thickness))};
       if paddle.y < (float_of_int (30 + thickness)) then paddle <- {x = paddle.x; y = (float_of_int (30 + thickness))};
+      s#update_ball dt;
       ()
 
 
